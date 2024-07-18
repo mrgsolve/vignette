@@ -1,5 +1,5 @@
 ---
-title: "mrgsolve: Simulate from ODE-Based Models"
+title: "\\textbf{mrg{\\color{mrgreen}solve}}: Simulate from ODE-Based Models"
 subtitle: "Get Started Package Vignette"
 shorttitle: "Let's Get Started"
 author: Kyle T. Baron
@@ -9,15 +9,15 @@ date: 2023-01-04
 format: 
   pdf: 
     fig-cap-location: bottom
-    papersize: a4
+    papersize: letter
     number-sections: true
     toc: true
     toc-depth: 2
     toc-title: Contents
     geometry: 
       - bottom=1.25in
-      - left=1.5in
-      - right=1.5in
+      - left=1.0in
+      - right=1.0in
       - top=1.25in
     include-in-header: 
       - header.tex
@@ -25,7 +25,7 @@ format:
 abstract: |
   \noindent mrgsolve is an R package maintained under the auspices of Metrum Research Group that facilitates simulation from models based on systems of ordinary differential equations (ODE) that are typically employed for understanding pharmacokinetics, pharmacodynamics, and systems biology and pharmacology. mrgsolve consists of computer code written in the R and C++ languages, providing an interface to a C++ translation of the lsoda differential equation solver. This vignette will show you how to get started using mrgsolve. 
   \newline \newline
-  **Keywords**: _rstats, mrgsolve, simulation, ODE, PK, PKPD, PBPK, QSP_
+  **Keywords**: rstats, mrgsolve, simulation, ODE, PK, PKPD, PBPK, QSP
   \vskip 0.75cm \hrule
 vignette: >
   %\VignetteIndexEntry{mrgsolve: Simulate from ODE-Based Models}
@@ -42,15 +42,16 @@ vignette: >
 
 # Big picture
 
-In this section, I want to give you an overhead view of what it is like working
-with mrgsolve. There are a _huge_ number of little details that you might want
-to eventually know in order to use mrgsolve effectively; but for now, let's get
-a handle on the big ticket items. 
+To start out this package vignette, I want to give you an overhead view of what
+it is like working with mrgsolve. There are a _huge_ number of little details
+that you might want to eventually know in order to use mrgsolve effectively; but
+for now, let's get a handle on the big picture of what you need to do to get 
+the simulations you want.
 
 There are 3 (or 4) main simulation workflows that we want to work up to. We can
-think about the type of outputs we want and determine what inputs we'll need to
-create and the functions that need to be called in order to get those outputs
-back.
+think about the type of **outputs** we want and _then_ determine what **inputs**
+we'll need to create and the **functions** that need to be called in order to
+get those outputs back.
 
 First, load the package along with any other helper packages we need for this
 vignette.
@@ -73,8 +74,8 @@ mod
 
 In the above example, we created a file called `azithro-fixed.mod` (azithromycin
 population PK with fixed effect parameters only) and wrote out the covariate
-model, differential equations, etc into that file. We point `mread()` at that
-file to parse, compile and load that model. More information on using `mread()`
+model, differential equations, etc. into that file. We point `mread()` at that
+file to parse, compile and load the model. More information on using `mread()`
 and the model object is found in @sec-mod. We'll start showing you the model
 syntax in @sec-specification.
 
@@ -82,16 +83,17 @@ syntax in @sec-specification.
 
 The first and simplest workflow is to generate a single simulated profile from 
 the model. The quickest way we'll do this is using the model object loaded 
-in the previous section along with an event object
+in the previous section along with an _event object_
 
 ```{r}
+#| fig-align: center
 mod %>% 
   ev(amt = 250, ii = 24, addl = 4) %>% 
   mrgsim(end = 144, delta = 0.1) %>% 
   plot("CP") 
 ```
 
-The `mrgsim()` function is called to actually execute the simulation and we've
+The `mrgsim()` function is called to actually _execute_ the simulation and we've
 introduced some simulation options (like the simulation `end` time) by passing 
 those arguments in. More info on `mrgsim()` can be found in @sec-simulation. 
 
@@ -102,7 +104,7 @@ provided in @sec-event.
 ## Population
 
 When we simulate a population, we want to simulate a collection of individuals
-(or profiles) in a single simulation. Most often, this involves creating an 
+(or profiles) in a single simulation run. Most often, this involves creating an 
 input data set with dosing or other information for each subject in the 
 population.
 
@@ -113,7 +115,7 @@ mod <- mread("azithro.mod")
 ```
 
 Rather than using an event object as we did for the single profile, we make a 
-data set. 
+data set; in this example, we use `expand.ev()` to help
 
 ```{r}
 set.seed(9876)
@@ -124,9 +126,11 @@ data
 ```
 
 In this data set, we see 10 subjects who are differentiated by their different 
-weights (`WT`). For this simulation, we'll give every subject 250 mg.
+weights (`WT`). For this simulation, we are giving every subject a singe 250 mg
+dose.
 
 ```{r}
+#| fig-align: center
 set.seed(9876)
 
 mod %>% 
@@ -145,7 +149,7 @@ You can also simulate a population (or a batch of subjects) with a data set of
 parameters and an event object. This workflow is _like_ the population
 simulation, but the inputs are configured in a slightly different way where
 the population is a set of parameters with a common intervention, rather than 
-and data set with (possibly) different interventions (or different parameters)
+a data set with (possibly) different interventions (or different parameters)
 for each subject in the population. Going back to the `azithro-fixed` model
 
 ```{r}
@@ -168,6 +172,7 @@ We can pass this set of parameters as `idata`, or individual-level data,
 along with an event object
 
 ```{r}
+#| fig-align: center
 mod %>% 
   ev(amt = 250, ii = 24, addl = 4) %>% 
   idata_set(data) %>% 
@@ -182,10 +187,10 @@ approach is up to you and the needs of your simulation project.
 
 ## Replicate
 
-This pattern is just like data set, but we do that in a loop to generate 
-replicate simulations. Sometimes we do a simulation like this when we are doing
-simulation-based model evaluation or maybe we're simulating across draws from 
-a posterior distribution of parameter estimates. 
+This pattern is just like data set, but we do that in a loop to generate
+_replicate_ simulations. Sometimes we do a simulation like this when we are
+doing simulation-based model evaluation or maybe we're simulating across draws
+from a posterior distribution of parameter estimates.
 
 This simulation might look something like this (code not evaluated in this 
 vignette)
@@ -203,8 +208,8 @@ sim <- function(i, model, data) {
 out <- lapply(1:1000, sim, model = mod, data = data) %>% bind_rows()
 ```
 
-Here, we create a function that simulates a data set once and call that 
-repeatedly to get replicate simulated data sets. 
+Here, we create a function (`sim()`) that simulates a data set once and then
+call that function repeatedly to get replicate simulated data sets.
 
 
 ## The overall pattern 
@@ -232,6 +237,7 @@ out
 
 ```{r, fig.margin = TRUE}
 #| fig-height: 3
+#| fig-align: center
 plot(out, "CP")
 ```
 
@@ -239,7 +245,7 @@ That was a really simple simulation where we used an event object to initiate
 a dose into a one-compartment model. See how the `plot()` method allows us to 
 quickly visualize what happened in the simulation. See the `?modlib` help topic
 for more models you can play around with to get comfortable with mrgsolve. Or 
-keep reading to dig into more of the details.
+keep reading to dig into more of the details. 
 
 # Model object {#sec-mod}
 
@@ -257,15 +263,18 @@ This chapter introduces the ___model object___.
   
 ## `mread()`
 
-Load a model from a model specification file using `mread()`. 
+We saw before how you can load a model from a model specification file using
+`mread()`. Don't worry for now what is in that file; we'll show you how to
+create it in @sec-specification.
 
-- Don't worry for now what is in that file; we'll show you how to create it.
-- Your model can have any extension. Traditionally, we've used the `.cpp` 
-  extension because a lot of the code in that file is `C++`. However, we've 
-  moved away from that in recent years because code editors like `Rstudio` 
-  see that `.cpp` extension and think that _all_ the code is `C++` and format
-  the code in ways that aren't what you usually want. So using `.mod` (or `.txt`
-  can be helpful just to keep your editor from doing too much. 
+### Model file extension
+
+Your model can have any extension. Traditionally, we've used the `.cpp`
+extension because a lot of the code in that file is `C++`. However, we've moved
+away from that in recent years because code editors like `Rstudio` see that
+`.cpp` extension and think that _all_ the code is `C++` and format the code in
+ways that aren't what you usually want. So using `.mod` (or `.txt`) can be
+helpful just to keep your editor from doing too much.
 
 ### Syntax to load a model 
 
@@ -289,10 +298,9 @@ Assumes you are keeping all simulation code in the `models` directory
 mod <- mread("test.mod", project = "model")
 ```
 
-
-__Set `project` as an option__
-
-All my models are in this directory _for this project_
+This can be a convenient pattern in a larger project because the `project` 
+argument can be pulled from the `mrgsolve.project` R option (see `?options`).
+For example
 
 ```{r}
 #| eval: false
@@ -303,9 +311,9 @@ mod <- mread("test.mod")
 
 __Update on load__
 
-mrgsolve provides an `update()` method for updating a model object. `mread()` 
-will take in arguments and pass them along to `update()` so you can make these
-changes at the time the model is loaded.
+mrgsolve provides an `update()` method for changing some settings inside a model
+object. `mread()` will take in arguments and pass them along to `update()` so
+you can make these changes at the time the model is loaded.
 
 In this example, we'll
 
@@ -322,7 +330,7 @@ mod <- mread("model/test.mod", end = 240, rtol = 1e-5)
 
 Use `mread_cache()` to build and cache the model on disk. 
 
-When you load the model the first time, it'll be
+When you load the model the first time, you'll see
 
 ```{r}
 mod <- mread_cache("test.mod", project = "model")
@@ -338,17 +346,15 @@ By default, mrgsolve will store the cached model information in the temporary
 directory that R sets up every time you start a new R session. This is
 convenient because you don't have to think about what that directory is, but
 sometimes you want the cached model to sit in a location that you have a little
-more control over. Look at the `soloc` argument; this will let you place the
-cached model information in a stable location.
+more control over. Look at the `soloc` argument to `mread()`; this will let you
+place the cached model information in a stable location.
 
 ## `modlib()`
 
 Use the `modlib()` function to load a model from an internal model library.
-
-- Pre-coded models
-- Sourced from inside the `mrgsolve` installation directory
-- Great way to get models to experiment with
-  - But I rarely use these for production work
+These are pre-coded models that can be sourced from witin the mrgsolve 
+installation directory. They are a great way to get your hands on different
+models to experiment with. But note: I rarely use these for production work.
 
 This code will load a 1-compartment PK model. 
 
@@ -357,7 +363,8 @@ This code will load a 1-compartment PK model.
 mod <- modlib("pk1")
 ```
  
-List out the location of he model library
+You can list out the models that are available from the library with a plain 
+call to
 
 ```{r}
 modlib()
@@ -426,8 +433,6 @@ Note that each parameter has
 
 ## Compartments
 
-We'll keep working with the model object we loaded in the previous section. 
-
 Models also have compartments. Like parameters, compartments have 
 
 - A **name**
@@ -435,7 +440,8 @@ Models also have compartments. Like parameters, compartments have
 
 Compartments also have a ___number___ 
 
-Query the compartment list with `init()`
+Query the compartment list with `init()`. Using the model we loaded in the 
+previous section
 
 ```{r}
 init(mod)
@@ -443,9 +449,11 @@ init(mod)
 
 Notice that each compartment has a number associated with it. This is mainly
 used for dosing. But there is a model syntax that allows you to write a 
-model in terms of named compartments (e.g. `A(2)` or `F1`). 
+model in terms of named compartments (e.g. `A(2)` or `F1`) as well. 
 
 ## Random effects
+
+You can see what random effect matrices are available in the model with
 
 ```{r}
 revar(mod)
@@ -456,8 +464,7 @@ revar(mod)
 
 We frequently want to _change_ or _update_ the settings in the model object. 
 
-Updates can be made through `update()`. To change the simulation time grid
-we might use
+Updates can be made through `update()`. For example, use
 
 ```{r}
 mod <- update(mod, end = 240, delta = 2)
@@ -496,6 +503,8 @@ __What else can I update?__
 - `$OMEGA`, `$SIGMA`
 - `tscale` (rescale the output time)
 - `digits`
+- `outvars` (which compartments or derived quantities should appear in the 
+   output)
 
 __Parameter update__
 
@@ -526,7 +535,6 @@ Extract the value of one parameter
 ```{r}
 mod$CL
 ```
-
 
 __Extract everything__
 
@@ -592,6 +600,7 @@ the model object to `ev()` and then simulate.
 
 ```{r}
 #| fig-height: 3
+#| fig-align: center
 mod <- house(outvars = "GUT,CP,RESP", end = 24)
 
 mod %>% ev(amt = 100) %>% mrgsim() %>% plot()
@@ -606,6 +615,7 @@ You can also save the event object and pass it into the pipeline as we did
 before with the inline setup. 
 
 ```{r, eval = FALSE}
+#| fig-align: center
 e <- ev(amt = 100) 
 
 mod %>% ev(e) %>% mrgsim() %>% plot()
@@ -618,6 +628,7 @@ Alternatively, you can pass it in as the `events` argument
 for `mrgsim()`
 
 ```{r, eval = FALSE}
+#| fig-align: center
 mod %>% mrgsim(events = e) %>% plot()
 ```
 
@@ -780,6 +791,7 @@ mrgsim(mod)
 Alternatively with the pipe
 
 ```{r}
+#| fig-align: center
 mod %>% mrgsim() %>% plot()
 ```
 
@@ -790,6 +802,7 @@ this mechanism to customize your simulation or the output on the fly
 
 ```{r}
 #| fig-height: 3
+#| fig-align: center
 mod %>% mrgsim(outvars = "CP", end = 72, delta = 0.1) %>% plot()
 ```
 
@@ -945,6 +958,7 @@ to see what happened. You can plot a single output
 
 ```{r}
 #| fig-height: 3
+#| fig-align: center
 plot(out, CP ~ time)
 ```
 
@@ -952,6 +966,7 @@ or a collection of outputs
 
 ```{r}
 #| fig-height: 3
+#| fig-align: center
 plot(out, "CENT CP")
 ```
 
@@ -960,6 +975,7 @@ plot(out, "CENT CP")
 Use `filter_sims()` to limit the rows that are retained in the simulated output
 
 ```{r}
+#| fig-align: center
 out2 <- filter_sims(out, time <= 5)
 
 plot(out2)
@@ -1140,6 +1156,7 @@ mod$WT
 And when we simulate, 
 
 ```{r}
+#| fig-align: center
 mrgsim(mod) %>% plot("WT")
 ```
 
@@ -1206,6 +1223,7 @@ data
 When we pass this data frame for simulation and plot
 
 ```{r}
+#| fig-align: center
 out <- 
   mod %>% 
   data_set(data) %>%
