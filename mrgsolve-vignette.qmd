@@ -1,37 +1,52 @@
 ---
-title: "\\textbf{mrg{\\color{mrgreen}solve}}: Simulate from ODE-Based Models"
-subtitle: "Get Started Package Vignette"
-shorttitle: "Let's Get Started"
-author: Kyle T. Baron
-affiliation: Metrum Research Group
+title: "\\color{mrgreen}mrg\\color{black}solve: Simulate from ODE-Based Models"
+subtitle: "Let's Get Started"
+date: 2024-07-21
 keywords: rstats, mrgsolve, simulation, ode
-date: 2023-01-04
+author: Kyle T. Baron
 format: 
-  pdf: 
-    fig-cap-location: bottom
-    papersize: letter
+  mrgsolve_vignette-pdf:
+    keep_tex: true
     number-sections: true
     toc: true
-    toc-depth: 2
-    toc-title: Contents
-    geometry: 
-      - bottom=1.25in
-      - left=1.0in
-      - right=1.0in
-      - top=1.25in
-    include-in-header: 
-      - header.tex
-
-abstract: |
-  \noindent mrgsolve is an R package maintained under the auspices of Metrum Research Group that facilitates simulation from models based on systems of ordinary differential equations (ODE) that are typically employed for understanding pharmacokinetics, pharmacodynamics, and systems biology and pharmacology. mrgsolve consists of computer code written in the R and C++ languages, providing an interface to a C++ translation of the lsoda differential equation solver. This vignette will show you how to get started using mrgsolve. 
-  \newline \newline
-  **Keywords**: rstats, mrgsolve, simulation, ODE, PK, PKPD, PBPK, QSP
-  \vskip 0.75cm \hrule
-vignette: >
-  %\VignetteIndexEntry{mrgsolve: Simulate from ODE-Based Models}
-  %\VignetteKeyword{mrgsolve, r, ode}
-  %\VignettePackage{mrgsolve}
+    toc-depth: 3
 ---
+
+
+<!-- --- -->
+<!-- title: "\\textbf{mrg{\\color{mrgreen}solve}}: Simulate from ODE-Based Models" -->
+<!-- subtitle: "Get Started Package Vignette" -->
+<!-- shorttitle: "Let's Get Started" -->
+<!-- author: Kyle T. Baron -->
+<!-- affiliation: Metrum Research Group -->
+<!-- keywords: rstats, mrgsolve, simulation, ode -->
+<!-- date: 2023-01-04 -->
+<!-- format:  -->
+<!--   pdf:  -->
+<!--     fig-cap-location: bottom -->
+<!--     papersize: letter -->
+<!--     number-sections: true -->
+<!--     toc: true -->
+<!--     toc-depth: 2 -->
+<!--     toc-title: Contents -->
+<!--     geometry:  -->
+<!--       - bottom=1.25in -->
+<!--       - left=1.0in -->
+<!--       - right=1.0in -->
+<!--       - top=1.25in -->
+<!--     include-in-header:  -->
+<!--       - header.tex -->
+
+<!-- abstract: | -->
+<!--   \noindent mrgsolve is an R package maintained under the auspices of Metrum Research Group that facilitates simulation from models based on systems of ordinary differential equations (ODE) that are typically employed for understanding pharmacokinetics, pharmacodynamics, and systems biology and pharmacology. mrgsolve consists of computer code written in the R and C++ languages, providing an interface to a C++ translation of the lsoda differential equation solver. This vignette will show you how to get started using mrgsolve.  -->
+<!--   \newline \newline -->
+<!--   **Keywords**: rstats, mrgsolve, simulation, ODE, PK, PKPD, PBPK, QSP -->
+<!--   \vskip 0.75cm \hrule -->
+<!-- vignette: > -->
+<!--   %\VignetteIndexEntry{mrgsolve: Simulate from ODE-Based Models} -->
+<!--   %\VignetteKeyword{mrgsolve, r, ode} -->
+<!--   %\VignettePackage{mrgsolve} -->
+<!-- --- -->
 \vskip 0.75cm
 \hrule
 \vskip 0.5cm

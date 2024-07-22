@@ -1,0 +1,15 @@
+title: mrgsolve
+author: Nicola Rennie
+version: 0.0.1
+contributes:
+  formats: 
+    pdf:
+      include-in-header: 
+       - "mrgsolve_vignette.tex"
+      include-before-body:
+       - "pagestyle.tex"
+      toc: false
+      code-block-bg: codebg
+      linkcolor: highlight
+      urlcolor: highlight
+  

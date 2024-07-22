@@ -1,0 +1,95 @@
+% load packages
+\usepackage{geometry}
+\usepackage{xcolor}
+\usepackage{eso-pic}
+\usepackage{fancyhdr}
+\usepackage{sectsty}
+\usepackage{fontspec}
+\usepackage{titlesec}
+\usepackage{setspace}
+
+%% Set page size with a wider right margin
+\geometry{a4paper, total={170mm,257mm}, left=20mm, top=20mm, bottom=20mm, right=50mm}
+
+%% Let's define some colours
+\definecolor{lg}{HTML}{ECECEC}
+\definecolor{codebg}{HTML}{F5F5F5}
+%\definecolor{codebg}{HTML}{f6f8fa}
+\definecolor{light}{HTML}{E6E6FA}
+\definecolor{highlight}{HTML}{800080}
+\definecolor{dark}{HTML}{330033}
+%\definecolor{mrgreen}{RGB}{9,101,46}
+\definecolor{mrgreen}{HTML}{097f5f}
+\definecolor{white}{HTML}{FFFFFF}
+
+% Let's add the border on the right hand side
+\AddToShipoutPicture{%
+    \AtPageLowerLeft{%
+        \put(\LenToUnit{\dimexpr\paperwidth-3cm},0){%
+            \color{white}\rule{3cm}{\LenToUnit\paperheight}%
+          }%
+     }%
+     % logo
+    \AtPageLowerLeft{% start the bar at the bottom right of the page
+        \put(\LenToUnit{\dimexpr\paperwidth-3cm},26.0cm){% move it to the top right
+            \color{white}\includegraphics[width=1.75cm]{_extensions/mrgsolve_vignette/hex.png}
+          }%
+     }%
+}
+
+%% Style the page number
+\fancypagestyle{mystyle}{
+  \fancyhf{}
+  \renewcommand\headrulewidth{0pt}
+  \fancyfoot[R]{\thepage}
+  \fancyfootoffset{3.5cm}
+}
+\setlength{\footskip}{20pt}
+
+%% style the chapter/section fonts
+\chapterfont{\color{mrgreen}\fontsize{20}{16.8}\selectfont}
+\sectionfont{\color{mrgreen}\fontsize{20}{16.8}\selectfont}
+\subsectionfont{\color{dark}\fontsize{14}{16.8}\selectfont}
+% \titleformat{\subsection}
+%   {\sffamily\Large\bfseries}{\thesection}{1em}{}[{\titlerule[0.8pt]}]
+\titleformat{\section}
+   {\sffamily\Large\bfseries}{\thesection}{1em}{}[{\titlerule[0.8pt]}]
+    
+  
+% left align title \MakeUppercase
+\makeatletter
+\renewcommand{\maketitle}{\bgroup\setlength{\parindent}{0pt}
+\begin{flushleft}
+  {\sffamily\huge\textbf{{\@title}}} 
+  \vspace{0.3cm} \newline
+  {\Large {\@subtitle}} \vspace{0.3cm} \newline
+  \@author 
+  \vspace{0.3cm}
+  \newline
+  \@date
+  \vspace{0.3cm}
+  \hrule
+  % \@abstract
+  % \hrule
+\end{flushleft}\egroup
+}
+\makeatother
+
+%% Use some custom fonts
+\setsansfont{Ubuntu}[
+    Path=_extensions/mrgsolve_vignette/Ubuntu/,
+    Scale=0.9,
+    Extension = .ttf,
+    UprightFont=*-Regular,
+    BoldFont=*-Bold,
+    ItalicFont=*-Italic,
+    ]
+
+\setmainfont{Ubuntu}[
+    Path=_extensions/mrgsolve_vignette/Ubuntu/,
+    Scale=0.9,
+    Extension = .ttf,
+    UprightFont=*-Regular,
+    BoldFont=*-Bold,
+    ItalicFont=*-Italic,
+    ]
