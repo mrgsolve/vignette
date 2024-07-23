@@ -1,8 +1,8 @@
 ---
 title: "\\color{mrgreen}mrg\\color{black}solve: Simulate from ODE-Based Models"
-subtitle: "Let's Get Started"
-date: 2024-07-21
-keywords: rstats, mrgsolve, simulation, ode
+subtitle: "Package vignette to get started simulating"
+date: today
+
 author: Kyle T. Baron
 format: 
   mrgsolve_vignette-pdf:
@@ -10,6 +10,7 @@ format:
     number-sections: true
     toc: true
     toc-depth: 3
+    keywords: rstats, mrgsolve, simulation, ode
 ---
 
 
@@ -116,7 +117,7 @@ The event object is a quick way to introduce an intervention (like dose
 administration) into your simulation. More information about event objects is 
 provided in @sec-event.
 
-## Population
+## Population simulation
 
 When we simulate a population, we want to simulate a collection of individuals
 (or profiles) in a single simulation run. Most often, this involves creating an 
@@ -158,7 +159,7 @@ This simulation introduces variability not only through the covariate `WT` but
 also through random effects (i.e., ETAs) which are simulated when we call 
 `mrgsim()`.
 
-## Batch 
+## Batch simulation
 
 You can also simulate a population (or a batch of subjects) with a data set of
 parameters and an event object. This workflow is _like_ the population
@@ -200,9 +201,9 @@ slightly different setup. This setup might be more or less convenient or more
 or less flexible to use compared to the population setup. Either way, the 
 approach is up to you and the needs of your simulation project. 
 
-## Replicate
+## Replicate simulation
 
-This pattern is just like data set, but we do that in a loop to generate
+This pattern is just like `data_set`, but we do that in a loop to generate
 _replicate_ simulations. Sometimes we do a simulation like this when we are
 doing simulation-based model evaluation or maybe we're simulating across draws
 from a posterior distribution of parameter estimates.
@@ -227,9 +228,9 @@ Here, we create a function (`sim()`) that simulates a data set once and then
 call that function repeatedly to get replicate simulated data sets.
 
 
-## The overall pattern 
+## The general pattern 
 
-So the overall pattern to working with mrgsolve is
+So the general pattern to working with mrgsolve is
 
 - Code a model 
 - Load it with `mread()`
@@ -257,46 +258,48 @@ plot(out, "CP")
 ```
 
 That was a really simple simulation where we used an event object to initiate
-a dose into a one-compartment model. See how the `plot()` method allows us to 
+a dose into a one-compartment model. Notice how the `plot()` method allows us to 
 quickly visualize what happened in the simulation. See the `?modlib` help topic
 for more models you can play around with to get comfortable with mrgsolve. Or 
 keep reading to dig into more of the details. 
 
 # Model object {#sec-mod}
 
-This chapter introduces the ___model object___. 
+This chapter introduces the mrgsolve ___model object___. The model object 
+contains all information about _the model_ itself, including
 
-- The model object contains all information about _the model_
-  - Compartments
-  - ODE
-  - Algebraic relationships
-  - Random effects
-  - More
-- The model object is what you use in R to 
-  - Query the model
-  - Run simulations
+- Compartments
+- ODE
+- Algebraic relationships
+- Random effects
+- More
+
+The model object is what you use in R work with the model, including 
+
+- Query the model
+- Run simulations
   
 ## `mread()`
 
-We saw before how you can load a model from a model specification file using
-`mread()`. Don't worry for now what is in that file; we'll show you how to
-create it in @sec-specification.
+We saw before that you can load a model from a model specification file using
+the `mread()` function. Don't worry for now what is in that file; we'll show you
+how to create it in @sec-specification.
 
-### Model file extension
+### Model file extension {#sec-model-file-extension}
 
 Your model can have any extension. Traditionally, we've used the `.cpp`
-extension because a lot of the code in that file is `C++`. However, we've moved
+extension because a lot of the code in that file is `c++`. However, we've moved
 away from that in recent years because code editors like `Rstudio` see that
-`.cpp` extension and think that _all_ the code is `C++` and format the code in
-ways that aren't what you usually want. So using `.mod` (or `.txt`) can be
-helpful just to keep your editor from doing too much.
+`.cpp` extension and _think_ that _all_ the code is `c++`; they then format the
+code in ways that aren't what you usually want. So using the `.mod` (or `.txt`) 
+file extension can be helpful just to keep your editor from doing too much.
 
 ### Syntax to load a model 
 
 This section walks you though some of the ways you can use `mread()` to load 
 a model.
 
-__Provide the complete path to the file__
+You can provide the complete path to the file
 
 ```{r}
 #| eval: false
@@ -304,9 +307,9 @@ mod <- mread("model/test.mod")
 ```
 
 
-__Provide the directory as an argument__
-
-Assumes you are keeping all simulation code in the `models` directory
+You can provide the file name (first argument) and enclosing directory (as 
+`project`); this assumes you are keeping all simulation code in the 
+`models` directory
 
 ```{r}
 #| eval: false
@@ -324,22 +327,22 @@ options(mrgsolve.project = "model")
 mod <- mread("test.mod")
 ```
 
-__Update on load__
+### Update the model on load
 
 mrgsolve provides an `update()` method for changing some settings inside a model
 object. `mread()` will take in arguments and pass them along to `update()` so
-you can make these changes at the time the model is loaded.
-
-In this example, we'll
+you can make these changes at the time the model is loaded. For example, 
+we can 
 
 - Set the simulation end time to `240`
 - Set (increase) ODE solver relative tolerance to `1e-5`
+
+by passing the appropriate arguments through `mread()`
 
 ```{r}
 #| eval: false
 mod <- mread("model/test.mod", end = 240, rtol = 1e-5)
 ```
-
 
 ### Read and cache
 
@@ -367,24 +370,19 @@ place the cached model information in a stable location.
 ## `modlib()`
 
 Use the `modlib()` function to load a model from an internal model library.
-These are pre-coded models that can be sourced from witin the mrgsolve 
+These are pre-coded models that can be sourced from within the mrgsolve 
 installation directory. They are a great way to get your hands on different
-models to experiment with. But note: I rarely use these for production work.
+models to experiment with. But note: I rarely use these for production work; 
+_almost_ always, my production model is more complicated that what has been 
+coded into these general-purpose library models.
 
-This code will load a 1-compartment PK model. 
+This code will load a 1-compartment PK model 
 
 ```{r}
 #| eval: false
 mod <- modlib("pk1")
 ```
  
-You can list out the models that are available from the library with a plain 
-call to
-
-```{r}
-modlib()
-```
-
 So the `modlib()` function is equivalent to 
 
 ```{r}
@@ -392,14 +390,14 @@ So the `modlib()` function is equivalent to
 mod <- mread("pk1", project = modlib())
 ```
 
-Find out what models are in the library
+Check out the `modlib()` help topic for a more detailed listing of the models
 
 ```{r}
 #| eval: false
 ?modlib
 ```
 
-## Overview
+## Model overview
 
 You can print `mod` to the R console and see what's going on 
 
@@ -424,8 +422,8 @@ see(mod)
 
 Parameters are `name=value` pairs that are used in your model. You can _change_
 the `value` of a parameter in several different ways. Understanding how 
-to do this update is really important if you want to make interesting 
-simulation outputs.
+to do this parameter value update is really important if you want to make 
+interesting simulation outputs.
 
 Query the parameter list with `param()`
 
@@ -442,9 +440,13 @@ This output shows you there are 3 parameters in the model
 Note that each parameter has
 
 - A **name**(e.g. `CL`)
-- A **value** (must be _numeric_) 
+- A **value** (must be _numeric_ or _evaluate_ to a numeric value) 
 
+Parameter names can be upper or lower case letters or numbers; the only 
+punctuation allowed in parameter names is underscore (`_`).
 
+Parameters are unordered; the order in which you code the parameters makes no 
+difference to how you are able to work with the model.
 
 ## Compartments
 
@@ -453,18 +455,23 @@ Models also have compartments. Like parameters, compartments have
 - A **name**
 - A **value** 
 
-Compartments also have a ___number___ 
+The same rules hold for compartment names that we discussed for parameter 
+names. 
 
-Query the compartment list with `init()`. Using the model we loaded in the 
-previous section
+Compartments also have a ___number___; they are numbered in the order in which
+they are entered. 
+
+Query the compartment list with `init()`. For example, using the model we loaded
+in the previous section
 
 ```{r}
 init(mod)
 ```
 
-Notice that each compartment has a number associated with it. This is mainly
-used for dosing. But there is a model syntax that allows you to write a 
-model in terms of named compartments (e.g. `A(2)` or `F1`) as well. 
+Notice that each compartment has a number associated with it; this is mainly
+used for dosing via `CMT` in your data set. But there is a model syntax that
+allows you to write a model in terms of named compartments (e.g. `A(2)` or `F1`)
+as well.
 
 ## Random effects
 
@@ -479,7 +486,7 @@ revar(mod)
 
 We frequently want to _change_ or _update_ the settings in the model object. 
 
-Updates can be made through `update()`. For example, use
+Updates can be made through the `update()` method. For example, use
 
 ```{r}
 mod <- update(mod, end = 240, delta = 2)
@@ -511,10 +518,12 @@ __What else can I update?__
 - Time
   - `start`, `end`, `delta`, `add`
 - Parameters and compartment initial values
-- Solver settings
+- ODE solver settings
   -  `atol`, `rtol`
   -  `hmax`, `maxsteps`, `mxhnil`, `ixpr`
   - Usually changing `rtol`, `atol`, and maybe `hmax`
+- Settings related to steady state
+  - `ss_rtol`, `ss_atol`
 - `$OMEGA`, `$SIGMA`
 - `tscale` (rescale the output time)
 - `digits`
@@ -568,7 +577,7 @@ to implement a series of doses into the system during the simulation. Event
 objects function like quick and easy data sets to accomplish this.
 
 
-## Create and event object
+## Create an event object
 
 Use `ev()` and pass NMTRAN data names in lower case. 
 
@@ -600,6 +609,8 @@ You can pass
   - 2 irregular steady-state
 - `rate` give the dose zero-order with this rate
   - `tinf` alternative for infusion time 
+- other `name=value` items that you would like to appear in the data set
+  underlying the simulation
 
 
 See `?ev` for additional details. 
@@ -621,7 +632,7 @@ mod <- house(outvars = "GUT,CP,RESP", end = 24)
 mod %>% ev(amt = 100) %>% mrgsim() %>% plot()
 ```
 
-This is a common work flow when exploring a model and an intervention.
+This is a common workflow when exploring a model and an intervention.
 
 
 ### As object
@@ -637,10 +648,10 @@ mod %>% ev(e) %>% mrgsim() %>% plot()
 ```
 
 Invoking the event object this way is a good idea when you want to create an
-intervention and apply it to several different simulation scenarios.
+intervention and apply it to several different simulation scenarios in the same
+script.
 
-Alternatively, you can pass it in as the `events` argument
-for `mrgsim()`
+Alternatively, you can pass it in as the `events` argument for `mrgsim()`.
 
 ```{r, eval = FALSE}
 #| fig-align: center
@@ -652,7 +663,7 @@ pipeline via `ev()`.
 
 ## Combining event objects 
 
-We can create more complex interventions from several simpler event objects. 
+We can create more complex interventions from several, simpler event objects. 
 mrgsolve provides an interface with helper functions to facilitate this.
 
 ### Simple combination
@@ -667,29 +678,42 @@ load <- ev(amt = 100)
 
 maintenance <- ev(time = 24, amt = 50, ii = 24, addl = 5)
 
-c(load, maintenance)
+dose <- c(load, maintenance)
+
+dose
 ```
+
+The final event object has all the simpler event object smashed together, with 
+no modification. 
 
 ### Sequence
 
 We can make this simpler by putting these in a sequence using the `seq()` 
-generic. Here is 100 mg daily for a week, followed by 50 mg daily for the rest 
+generic.  Here is 100 mg daily for a week, followed by 50 mg daily for the rest 
 of the month
 
 ```{r}
 a <- ev(amt = 100, ii = 24, total =  7) 
 b <- ev(amt = 50,  ii = 24, total = 21)
 
-seq(a,b)
+seq(a, b)
 ```
 
-The output shows that the `b` event was timed to start once all of the doses
-from the `a` event were given. 
+The output shows that the `b` event was automatically timed to start once all of
+the doses from the `a` event were given.
+
+You can also put a waiting period in between event objects in a sequence; to 
+wait for 7 days between `a` and `b` from the example above
+
+```{r}
+seq(a, wait = 24*7, b)
+```
+Now, `b` starts one week after `a` ends.
 
 
 ### Expand into multiple subjects
 
-We can take any event object and replicate it into several objects with the 
+We can take any event object and replicate it into several subjects with the 
 `ev_rep()` function. 
 
 ```{r}
@@ -712,6 +736,10 @@ as_data_set(
   c %>% ev_rep(1:2)
 )
 ```
+This example gives us two subjects receiving 100 mg for a week, two subjects
+receiving 50 mg for 3 weeks, and two subjects receiving 100 mg for a week
+followed by 50 mg for 3 weeks.
+
 
 ## Modifying event objects
 
@@ -725,7 +753,7 @@ ss <- mutate(single, ii = 24, ss = 1)
 ss
 ```
 
-Available tidyverse verbs include
+Available tidyverse verbs for working on event objects include
 
 - `mutate()`
 - `select()`
@@ -734,10 +762,13 @@ Available tidyverse verbs include
 
 ## Column name case
 
-By default, event objects have lower case names
+By default, event objects have lower case names when they are rendered to 
+a data frame or a data set
 
 ```{r}
 ev(amt = 100) %>% as.data.frame()
+
+ev(amt = 100) %>% as_data_set()
 ```
 
 You can request upper case names by using the `evd()` constructor
@@ -760,12 +791,12 @@ You can change the case of any event object _to_ upper case (`uctran()`) or
 _to_ lower case (`lctran()`)
 
 ```{r}
-evd(amt = 100) %>% lctran() %>% as.data.frame()
+evd(amt = 100) %>% as.data.frame() %>% lctran()
 ```
 
 In this example, we created an event object using `evd()` and then immediately 
-requested lower case names. This step can also be performed on the raw data 
-frame. 
+requested lower case names. This step can also be performed on a raw data 
+frame as well. 
 
 
 ## Rx specification
@@ -803,7 +834,8 @@ mod <- modlib("pk1") %>% ev(amt = 100)
 mrgsim(mod)
 ```
 
-Alternatively with the pipe
+Alternatively, we can execute the simulation by passing the model object in 
+with the pipe
 
 ```{r}
 #| fig-align: center
@@ -826,8 +858,8 @@ to 72 hours (`end = 72`) and asked for a finer output time grid (`delta = 0.1`).
 
 ### Options
 
-There are some options that can _only_ be set when you call `mrgsim(). These
-are function arguments. You can see them at `?mrgsim`
+There are some options that can _only_ be set when you call `mrgsim()`. These
+are function arguments; you can see them at `?mrgsim`.
 
 - `carry_out`: numeric data columns to _copy_ into the simulated output
 - `recover`: like `carry_out` but works with any type
@@ -861,9 +893,12 @@ always returns a data frame.
 
 __Quick__
 
-Call `mrgsim_q()` for a quick turnaround simulation, with minimal overhead 
-(and features). Only really useful when you are simulating repeatedly ... 
-like when estimating parameters or doing optimal design.
+Call `mrgsim_q()` for a quick turnaround simulation, with minimal overhead (and
+features). This is only really useful when you are simulating repeatedly, many
+100s or 1000s of times or more ... like when estimating parameters or doing
+optimal design. These functions will not make a single simulation run much 
+faster and they won't turn a long-running simulation into a short-running 
+simulation.
 
 ## Simulated output
 
@@ -882,8 +917,8 @@ summary(out)
 
 ### Output scope
 
-- The first column in the output is always `ID`
-- The second column in the output is always `time` (or `TIME`)
+The first column in the  simulated output is always `ID`. The second column in 
+the output is always `time` (or `TIME`).
 
 By default, you get simulated values in all compartments and for every 
 derived output _at every_ time
@@ -905,8 +940,8 @@ simulations become very large: limiting the outputs to those you actually need
 can make the difference between a simulation that fits within the available
 memory and one that doesn't.
 
-To request specific outputs at simulation time, set `outvars` in the model. 
-In this example, we make the selection on the fly
+To request specific outputs at simulation time, set `outvars` in the model
+object. In this example, we make the selection on the fly
 
 ```{r}
 mod %>% 
@@ -925,20 +960,21 @@ outvars(mod2)
 ### Copy inputs into output
 
 Input data items can be _copied_ into the simulated output without passing 
-through the model code itself. 
+through the model c++ code itself. 
 
-For most applications, use the `recover` argument to `mrgsim()`
+For most applications, use the `recover` argument to `mrgsim()`. 
 
 ```{r}
 data <- expand.ev(amt = c(100,300)) %>% 
-  mutate(dose = amt, arm = "100 mg x1", "300 mg x1")
+  mutate(dose = amt, arm = c("100 mg x1", "300 mg x1"))
 
 out <- mrgsim(mod, data, recover = "dose, arm", output = "df")
 
 count(out, dose, arm)
 ```
 
-This will let you copy inputs of _any type_ into the output. 
+This will let you copy inputs of _any type_ into the output (for example, 
+character or factor data). 
 
 If you just want to get numeric inputs into the output, use `carry_out`
 
@@ -969,7 +1005,7 @@ out
 ### Plot
 
 The main benefit from using this object is the ability to easily make plots
-to see what happened. You can plot a single output
+to see what happened in the simulation. You can plot a single output
 
 ```{r}
 #| fig-height: 3
@@ -982,8 +1018,9 @@ or a collection of outputs
 ```{r}
 #| fig-height: 3
 #| fig-align: center
-plot(out, "CENT CP")
+plot(out, "CP CENT")
 ```
+
 
 ### Filter
 
@@ -1042,7 +1079,7 @@ mod %>% mrgsim(ev(amt = 100)) %>% mutate(rep = 1)
 This will first coerce the output object to a data frame and then continue
 to work on the simulated data according to the functions in the pipeline.
 
-Other verbs you can use include
+Other verbs you can use on an `mrgsims` object include
 
 - `group_by()`
 - `mutate()`
@@ -1087,7 +1124,9 @@ for generating interesting and robust simulations.
 
 Big picture
 
-- `mrgsolve` maintains a parameter list, including names and values
+- `mrgsolve` maintains a parameter list, including parameter names and values
+  - The parameter list is set at the time the model is compiled; names and 
+    number of parameters cannot be changed after compile time
   - This list is used by default if nothing else is done
   - The parameter values in this list can be updated
 
@@ -1123,15 +1162,12 @@ a sensible _default_ output.
 ## Updating parameter values
 
 You can't change the names or number of parameters after you compile the model, 
-but you can change the values. 
-
-You can update parameters either 
+but you can change the values. You can update parameters either 
 
 - _prior to_ simulation or 
 - _during_ simulation
 
 We will illustrate with this model
-
 
 ```{r}
 mod <- mread("parameters.mod")
@@ -1191,12 +1227,12 @@ with
 out <- mrgsim(mod, param = list(WT = 70))
 ```
 
-This will generate simulated output with `WT` set to 70
+This will generate simulated output with `WT` set to 70.
 
 ### Update with object
 
-If you have a named object, you can pass that in to the update 
-as well. For example, pass in a named list
+If you have a named object, you can pass that in to the update as well. For
+example, pass in a named list
 
 ```{r}
 p <- list(WT = 70.2, FOO = 1)
@@ -1219,23 +1255,18 @@ mod$WT
 
 ## Update _during_  simulation 
 
-In this approach, we'll add a columns to our input data set
-with the same names as our parameters and let `mrgsolve`
-pick up the new values. 
-
-To illustrate, load a data set from which to simulate
+In this approach, we'll add a columns to our input data set with the same names
+as our parameters and let `mrgsolve` pick up the new values. To illustrate, load
+a data set from which to simulate
 
 ```{r}
 data <- read.csv("parameters-data.csv")
 data
 ```
 
-- Subjects 1, 2, and 3 have different (increasing) weight
-- All subjects have `SEX=0`
-- All subjects have `EGFR=60`
-
-
-When we pass this data frame for simulation and plot
+In this data set, subjects 1, 2, and 3 have different (increasing) weight; all
+subjects have `SEX=0` and `EGFR=60`. When we pass this data frame for simulation
+and plot
 
 ```{r}
 #| fig-align: center
@@ -1253,9 +1284,7 @@ in the model.
 
 ## Check if the names match
 
-Recall that we coded the model covariates using `$INPUT`, rather 
-than `$PARAM`?
-
+Recall that we coded the model covariates using `$INPUT`, rather than `$PARAM`?
 We can see that these parameters have this special tag
 
 ```{r}
@@ -1263,10 +1292,7 @@ param_tags(mod)
 ```
 
 They have the `input` tag, which means we expect to find them on the data set
-_when we ask_.
-
-
-We can check this data set against the parameters in the model
+_when we ask_. We can check this data set against the parameters in the model
 
 ```{r}
 check_data_names(data, mod)
@@ -1280,34 +1306,30 @@ data2 <- rename(data, eGFR = EGFR)
 check_data_names(data2, mod)
 ```
 
+See the `mode` argument to `check_data_names()`; you can warn or inform the 
+user in case parameter names don't look right, or you can issue an error.
 
 # Model Specification {#sec-specification}
 
-In this chapter, we'll start by coding up a pharmacokinetic model. The model 
-will be very simple to start, letting us get some concepts in place. Later on, 
-we'll do more compilcated model syntax.
+This chapter gives a broad overview of mrgsolve model specification syntax.
+We'll start by coding up a pharmacokinetic model. The model will be very simple
+to start, letting us get some concepts in place. Later on, we'll do more
+complicated model syntax.
 
 
 ![](pk-model.png)
 
 
-Parameters
+The model parameters are
 
 - `CL`
 - `V`
 - `KA`
 
-Compartments
+The model compartments are
 
 - `CENT`
 - `DEPOT`
-
-## Where to save your code?
-
-- You can use any file name with any extension
-- The extension you use may influence how your editor highlights and 
-  indents your code
-- I use `.mod`
 
 
 ## Model specification blocks
@@ -1329,7 +1351,9 @@ You can use either:
 
 - `$error`
 - `[ pk ]`
-- etc ... they all work
+- `[ DES ]`
+
+etc ... they all work.
 
 
 ### Syntax
@@ -1359,7 +1383,7 @@ Parameters have a **name** and a **value**, separated by `=`.
 Parameter names can be upper or lower case. If you want punctuation, 
 use underscore `_`.
 
-Parameter values must _evaluate_ to numeric.
+Parameter values must _evaluate_ to a numeric value.
 
 Parameters can't be functions of other parameters 
 _when writing the `$PARAM` block_. But there is a place where you can do 
@@ -1369,17 +1393,15 @@ Multiple parameters can go on one line, but separate by comma.
 
 ### Read it in with `mread()`
 
-Point `mread()` at your model file to
-
-- read in the model
-- see if it compiles
+Point `mread()` at your model file to read it in and see if it compiles.
 
 ```{r}
 mod <- mread("simple.mod")
 ```
 
-We'll learn much more about `mread()` later on, but for now we need a way 
-to check if our model coding is correct.
+We suggest writing the model in small sections, iteratively checking to see if 
+the model compiles. When you find syntax mistakes (you _will_ find them), they 
+will be easier to fix this way. 
 
 
 ## Compartments
@@ -1396,10 +1418,9 @@ Compartments are named
 - Upper or lower case
 - Punctuation use `_`
 
-Order doesn't matter, except 
-
-- When putting dosing records into the data set
-- You want to use the NONMEM-style coding
+Order doesn't matter, but consider listing your default dosing compartment 
+first. This is a convenient pattern to keep so you can just dose into 
+compartment 1 when setting up your data set or event object. 
 
 
 ## Differential equations
@@ -1426,10 +1447,9 @@ Right hand side can reference
 - Other quantities derived in `$DES` or `$PK`
 - Other internal variables
 
-Unlike `$PARAM` and `$CMT`, this is `c++` code
-
-- Any valid `c++` code is allowed
-- Each line (statement) should end in semi-colon `;`
+Unlike `$PARAM` and `$CMT`, this is `c++` code; you can include any valid `c++`
+statement. Also, because this is `c++`, each line or statement should end in 
+semi-color (`;`).
 
 ## Derived outputs
 
@@ -1451,18 +1471,16 @@ double CP = CENT/V;
 
 Like `$DES`, this block must be valid `c++` code. 
 
-Here we have created a new variable called `CP`, which is 
-the amount in the central compartment divided by the 
-central volume of distribution. 
+Here we have created a new variable called `CP`, which is the amount in the
+central compartment divided by the central volume of distribution.
 
-When we create a new variable, we must declare its `type`. 
-Use `double` for a floating point number. 
+When we create a new variable, we must declare its `type`. Use `double` for a
+floating point number.
 
 ## Capture outputs into the simulated data
 
-`mrgsolve` has a `$CAPTURE` block that works like 
-NONMEM's `$TABLE`. Just list the names you want copied
-into the output.
+mrgsolve has a `$CAPTURE` block that works like NONMEM's `$TABLE`. Just list the
+names you want copied into the output.
 
 ```{r, eval = FALSE}
 $PARAM 
@@ -1487,9 +1505,8 @@ $ERROR
 capture CP = CENT/V;
 ```
 
-`capture` is identical to type `double`, but tells `mrgsolve` to include this 
+`capture` is identical to type `double`, but tells mrgsolve to include this 
 item in the simulated output.
-
 
 A little-use feature is renaming items in `$CAPTURE`
 
@@ -1500,6 +1517,8 @@ double DV = CENT/V;
 
 $CAPTURE CP = DV
 ```
+
+The syntax is `<new-name> = <old-name>`. 
 
 
 ## Covariate model
@@ -1519,6 +1538,9 @@ double CL = TVCL * pow(WT/70, 0.75) * exp(ETA(1));
 
 
 ## C++ examples
+
+You can find all sorts of help with `c++` syntax on the web. Here are a few 
+common bits of `c++` code that you might need in your model. 
 
 ```{c, eval=FALSE}
 if(a == 2) b = 2;
@@ -1550,7 +1572,7 @@ following should evaluate to `0.75`
 double result = 3/4; # 0
 ```
 
-but it doesn't; here, `result` will evaluate to `0` because the `C++` compiler
+but it doesn't. Here, `result` will evaluate to `0` because the `c++` compiler
 will do integer division between the 3 and the 4 and you'll get `0`. 
 
 It is good to get in the habit of putting `.0` behind whole numbers. 
@@ -1561,17 +1583,14 @@ double result = 3.0/4.0; # 0.75
 ```
 
 Of course, you _might_ really want to divide two integers at some point; but 
-for now, please mind this "feature" of `C++` when writing your code. 
-
-Lots of help with `C++` on the web
-http://en.cppreference.com/w/cpp/numeric/math/tgamma
+for now, please mind this "feature" of `c++` when writing your code. 
 
 
 ## Random effects
 
 There are times when you _will_ need to code this manually. When estimating
-with NONMEM and simulating with `mrgsolve`, these matrices will 
-frequently be imported automatically via `$NMXML`.
+with NONMEM and simulating with mrgsolve, these matrices will 
+frequently be imported automatically via `$NMXML` or `$NMEXT`.
 
 ### Omega / ETA
 
@@ -1628,10 +1647,10 @@ There is no `FIX` in `mrgsolve`; everything in OMEGA and SIGMA is always fixed.
 
 - Use `$NMEXT` or `$NMXML`
   - `$NMEXT` reads from the `.ext` file
-    - Can be faster
+    - Can be faster than `$NMXML` when the `root.xml` file gets big
     - Doesn't retain `$OMEGA` and `$SIGMA` structure
   - `$NMXML` reads from the `.xml` file
-    - Can be slower
+    - Can be slower than `$NMEXT`
     - Does retain `$OMEGA` and `$SIGMA` structure
 
 This is the safest way to call
@@ -1653,20 +1672,22 @@ project = "../sim/"
 root = "cppfile"
 ```
 
+This code will look for `1006/1006.xml` under `sim`, one directory level up 
+from the location of the mrgsolve "cpp` file. 
+
 ## Models in closed form
 
-`mrgsolve` will solve one- and two-compartment models with first order
-input in closed form. This usually results in substantial speed up. 
-Use `$PKMODEL`. 
+mrgsolve will solve one- and two-compartment models with first order input in
+closed form. This usually results in substantial speed up. Use `$PKMODEL`.
 
 ```{r}
 #| eval: false
 $PKMODEL cmt = "GUT,CENT", depot = TRUE
 ```
 
-Certain symbols are required to be defined depending on the model. `mrgsolve`
-models are always parameterized in terms of clearances and volumes except
-for absorption, which is in terms of rate constant. 
+Certain symbols are required to be defined depending on the model. mrgsolve
+models are always parameterized in terms of clearances and volumes except for
+absorption, which is in terms of rate constant.
 
 - `CL / V`
 - `CL / V / KA`
@@ -1694,7 +1715,7 @@ double KE = CL/V;
 For most models, the numeric variables you declare are likely to be floating
 point numbers ... with type `double`. 
 
-We created a plugin that tells `mrgsolve` to look for new variables and 
+We created a plugin that tells mrgsolve to look for new variables and 
 declare them for you. 
 
 ```{r}
@@ -1708,16 +1729,16 @@ KE = CL/V;
 ### nm-vars
 
 
-`mrgsolve` historically used
+mrgsolve historically has used 
 
 - `CENT`
 - `dxdt_CENT`
 - `F_CENT`
 - `D_CENT`
 
-etc. When we started `mrgsolve`, this was a really nice feature because you 
-didn't have to think about compartment _numbers_. However, this made
-translation of the model more difficult.
+etc. When we started mrgsolve, this was a really nice feature because you didn't
+have to think about compartment _numbers_. However, this made translation of the
+model more difficult.
 
 When you invoke the `nm-vars` plugin, you can write in a syntax that is much 
 more like NONMEM.
@@ -1739,12 +1760,14 @@ DADT(1) = - KA * A(1);
 Other convenience syntax 
 
 - `LOG()` and `log()`
+- `LOG10()` and `log10()`
 - `EXP()` and `exp()`
+- `DEXP()` and `exp()`
 - `SQRT()` and `sqrt()`
+- `COS()` and `cos()`
 
 Regardless of whether you have `nm-vars` invoked or not, you can still use
 `THETA(n)` to refer to parameter `THETAn`.
-
 
 Try the `nm-like` model in the model library for an example. 
 
@@ -1761,7 +1784,7 @@ but they work in `c++`.
 
 The main use for this is random number generation. Any d/q/p/r function 
 in R will be available; arguments are the same, but omit `n` (you always 
-get just one draw when calling from `c++`.
+get just one draw when calling from `c++`).
 
 For a draw from U(0,1)
 
@@ -1773,15 +1796,17 @@ $ERROR
 double u = R::runif(0, 1);
 ```
 
-Note: this will slightly increase compile time.
+Note: the model compilation time will slightly increase any time you invoke 
+the Rcpp resources. It's still tolerable, but I just wouldn't include Rcpp if 
+you don't have to.
 
 ## Other blocks
 
-- Use `$SETUP` to configure the model object on load
+- Use `$SET` to configure the model object on load
   - For example, set the simulation end time
 - Use `$ENV` to define a set of R objects that might be evaluated in other 
   model blocks
-- Use `$PRED` for other closed form models
+- Use `$PRED` for other user-written closed form models
 - Use `$PREAMBLE` for code that gets run once at the start of a problem 
   `NEWIND==0`
 - Use `$GLOBAL` to define variables outside of any other block
