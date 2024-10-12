@@ -136,7 +136,7 @@ data set; in this example, we use `expand.ev()` to help
 ```{r}
 set.seed(9876)
 
-data <- expand.ev(amt = 250, WT = runif(10, 50, 100))
+data <- expand.evd(amt = 250, WT = runif(10, 50, 100))
 
 data
 ```
@@ -246,7 +246,7 @@ this
 ```{r, message = FALSE}
 mod <- modlib("pk1", delta = 0.1)
 
-out <- mrgsim(mod, events = ev(amt = 100))
+out <- mrgsim(mod, events = evd(amt = 100))
 
 out
 ```
@@ -530,6 +530,8 @@ __What else can I update?__
 - `outvars` (which compartments or derived quantities should appear in the 
    output)
 
+See `?mrgsolve::update` for more details.
+
 __Parameter update__
 
 To update parameters, use `param()`. More on this in @sec-parameters 
@@ -778,8 +780,15 @@ evd(amt = 100) %>% as.data.frame()
 ```
 
 These are the names you will see in the rendered data set and in the simulated
-output. Note that, when working with event objects, always refer to lower
-case names
+output. Equivalent behavior is seen with 
+
+```{r, eval = FALSE}
+evd_expand(amt = 100)
+expand.evd(amt = 100)
+```
+
+
+Note that, when working with event objects, always refer to lower case names
 
 ```{r}
 e <- evd(amt = 100)
