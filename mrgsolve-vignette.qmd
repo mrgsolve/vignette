@@ -5,6 +5,10 @@ date: today
 
 author: Kyle T. Baron
 format: 
+  html: 
+    number-sections: true
+    toc: true
+    toc-depth: 3
   mrgsolve_vignette-pdf:
     keep_tex: true
     number-sections: true
