@@ -9,6 +9,8 @@ format:
     number-sections: true
     toc: true
     toc-depth: 3
+    embed-resources: true
+    self-contained: true
   mrgsolve_vignette-pdf:
     keep_tex: true
     number-sections: true
@@ -452,6 +454,9 @@ punctuation allowed in parameter names is underscore (`_`).
 Parameters are unordered; the order in which you code the parameters makes no 
 difference to how you are able to work with the model.
 
+See @sec-parameters for a deeper discussion of model parameters and their central
+role in generating simulations to answer questions at hand.
+
 ## Compartments
 
 Models also have compartments. Like parameters, compartments have 
@@ -545,7 +550,98 @@ To update parameters, use `param()`. More on this in @sec-parameters
 mod <- param(mod, CL = 2)
 ```
 
+## Write a model object to file
+
+Recall that we use `mread()` or `mread_cache()` to read model code from a file 
+into an object in your R session. mrgsolve also allows you to write the model 
+contents out to a file again. The code in the new file will be well formatted, 
+but it will be by necessity different in some ways from the code you originally
+wrote.
+
+As an example, read `test.mod` back into R
+
+```{r}
+mod <- mread_cache("model/test.mod")
+```
+
+We can update this model 
+
+```{r}
+mod <- update(mod, end = 240, delta = 6, rtol = 1e-4)
+mod <- param(mod, V = 15, CL = 1.5)
+```
+
+We can write this model back to file in a couple of different formats. First, 
+you can write it in `yaml` format with `mwrite_yaml()`
+
+```{r}
+file <- mwrite_yaml(mod, file = "model/test.yaml")
+```
+
+Now the model code has been written back to the file `test.yaml` in the `model`
+directory.
+
+There is no requirements for file extension; we just chose `yaml` to match the 
+format. 
+
+To read this file back into R, use `mread_yaml()`
+
+```{r}
+mod2 <- mread_yaml("model/test.yaml") 
+```
+
+Now, you have a model you can simulate from again (`mod2`). 
+
+You can also write the model out in native mrgsolve format
+
+```{r}
+mwrite_cpp(mod2, file = "model/test-3.cpp")
+```
+
+Of course, we can read this file back in using `mread()` and 
+friends. 
+
+The important feature of `mwrite_*` is that it breaks any connections to NONMEM 
+outputs that might be created through the use of `$NMXML` or `$NMEXT` blocks.
+
+For example, model `1005` in `modlib()` is connected to a NONMEM model
+
+```{r}
+modx <- modlib("1005")
+
+as.list(modx)$nm_import
+```
+
+This mrgsolve model is reading `THETA`, `OMEGA` and `SIGMA` from 
+`1005.xml`. 
+
+When we write the code to, for example, `yaml` format, all parameters
+and matrices are written into the file as they are, forgetting they 
+came from the NONMEM run.
+
+```{r}
+tmp <- tempfile()
+mwrite_yaml(modx, file = tmp)
+```
+
+We can check that this is true by parsing the yaml file
+
+```{r}
+y <- yaml::yaml.load_file(tmp)
+
+names(y)
+
+y$param[1:5]
+```
+
+This functionality can be very helpful when sharing your NONMEM-backed
+simulation model written in mrgsolve. 
+
+
 ## Advanced
+
+This section shows some advanced methods for interacting with the mrgsolve 
+model object.
 
 __Get the value of a parameter or setting__
 
@@ -852,6 +948,7 @@ with the pipe
 
 ```{r}
 #| fig-align: center
+#| fig.height: 3.5
 mod %>% mrgsim() %>% plot()
 ```
 
@@ -943,6 +1040,10 @@ head(out)
 - `EV` and `CENT` are compartments
 - `CP` is a derived variable (`CENT/V`)
 
+
+We can use the `outvars()` function to look at what compartments and derived
+variables will come back in the simulation
+
 ```{r}
 outvars(mod)
 ```
@@ -978,8 +1079,17 @@ through the model c++ code itself.
 For most applications, use the `recover` argument to `mrgsim()`. 
 
 ```{r}
-data <- expand.ev(amt = c(100,300)) %>% 
-  mutate(dose = amt, arm = c("100 mg x1", "300 mg x1"))
+data <- expand.ev(amt = c(100, 300))
+
+data <- mutate(
+  data, 
+  dose = amt, 
+  arm = case_match(
+    dose, 
+    100 ~ "100 mg x1", 
+    300 ~ "300 mg x1"
+  )
+)
 
 out <- mrgsim(mod, data, recover = "dose, arm", output = "df")
 
@@ -992,7 +1102,7 @@ character or factor data).
 If you just want to get numeric inputs into the output, use `carry_out`
 
 ```{r}
-data <- expand.ev(amt = c(100,300)) %>%  mutate(dose = amt)
+data <- expand.ev(amt = c(100, 300)) %>% mutate(dose = amt)
 
 out <- mrgsim(mod, data, carry_out = "dose", output = "df")
 
@@ -1041,6 +1151,7 @@ Use `filter_sims()` to limit the rows that are retained in the simulated output
 
 ```{r}
 #| fig-align: center
+#| fig-height: 3.5
 out2 <- filter_sims(out, time <= 5)
 
 plot(out2)
@@ -1221,7 +1332,7 @@ And when we simulate,
 
 ```{r}
 #| fig-align: center
-mrgsim(mod) %>% plot("WT")
+mrgsim_df(mod) %>% count(WT)
 ```
 
 You can also do this via `update()`
