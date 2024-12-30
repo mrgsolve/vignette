@@ -9,9 +9,11 @@ abstract: |
   applications, including pharmacokinetics (PK), pharmacokinetics/pharmacodynamics 
   (PK/PD), physiologically-based pharmacokinetic (PBPK) modeling, and 
   quantitative systems pharmacology. This vignette provides a comprehensive 
-  introduction to using mrgsolve in a single document. Be sure to visit
-  [https://mrgsolve.org](mrgsolve.org) for additional resources to help you 
-  learn and effectively use mrgsolve. 
+  introduction to using mrgsolve in a single document. While there is more to 
+  learn about mrgsolve, this document will give you a good introduction to the 
+  essentials and some ideas for thinking about how all the pieces fit together. 
+  Be sure to visit [https://mrgsolve.org](mrgsolve.org) for additional resources 
+  to help you learn and effectively use mrgsolve. 
 
 author: Kyle T. Baron
 format: 
