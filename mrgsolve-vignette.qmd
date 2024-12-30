@@ -1535,7 +1535,7 @@ Point `mread()` at your model file to read it in and see if it compiles.
 mod <- mread("simple.mod")
 ```
 
-We suggest writing the model in small sections, iteratively checking to see if 
+We suggest writing the model in small sections, interactively checking to see if 
 the model compiles. When you find syntax mistakes (you _will_ find them), they 
 will be easier to fix this way. 
 
