@@ -1,0 +1,65 @@
+source: mrgsolve::mwrite
+mrgsolve: 1.5.2.9000
+format: yaml
+version: 1.0
+model: test_mod
+prob: ''
+param:
+  CL: 1.5
+  V: 15.0
+  TVKA: 1.2
+init:
+  GUT: 0.0
+  CENT: 0.0
+capture: CP
+omega:
+  data:
+    matrix1:
+      row1: 0.1
+      row2:
+      - 0.0
+      - 0.2
+  labels:
+    matrix1:
+    - '.'
+    - '.'
+  names: '...'
+sigma:
+  data: {}
+  labels: {}
+  names: []
+envir: []
+plugin: base
+update:
+  start: 0.0
+  end: 240.0
+  delta: 6.0
+  add: []
+  atol: 1.0e-08
+  rtol: 0.0001
+  ss_atol: 1.0e-08
+  ss_rtol: 1.0e-08
+  maxsteps: 20000.0
+  hmax: 0.0
+  hmin: 0.0
+  mxhnil: 2.0
+  ixpr: 0.0
+  mindt: 2.22044605e-15
+  digits: -1.0
+  tscale: 1.0
+  outvars:
+  - GUT
+  - CENT
+  - CP
+set: []
+code:
+- $PKMODEL
+- depot = TRUE
+- ncmt = 1
+- ' '
+- $MAIN
+- double KA = TVKA + ETA(1);
+- ' '
+- $TABLE
+- capture CP = CENT/V;
+- ' '
