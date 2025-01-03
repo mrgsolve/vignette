@@ -1,7 +1,7 @@
 ---
 title: "\\color{mrgreen}mrg\\color{black}solve: Simulate from ODE-Based Models"
 subtitle: "Package vignette to get started simulating"
-date: 2025-01-01
+date: today
 abstract: |
   \noindent mrgsolve is an R package for simulation from hierarchical, ordinary
   differential equation (ODE) based models typically employed in drug 
