@@ -1,7 +1,7 @@
 ---
 title: "\\color{mrgreen}mrg\\color{black}solve: Simulate from ODE-Based Models"
 subtitle: "Package vignette to get started simulating"
-date: today
+date: 2025-01-01
 abstract: |
   \noindent mrgsolve is an R package for simulation from hierarchical, ordinary
   differential equation (ODE) based models typically employed in drug 
@@ -29,6 +29,20 @@ format:
     toc: true
     toc-depth: 3
     keywords: rstats, mrgsolve, simulation, ode
+  # pdf:
+  #   fig-cap-location: bottom
+  #   papersize: letter
+  #   number-sections: true
+  #   toc: true
+  #   toc-depth: 2
+  #   toc-title: Contents
+  #   geometry:
+  #     - bottom=1.25in
+  #     - left=1.0in
+  #     - right=1.0in
+  #     - top=1.25in
+  #   include-in-header:
+  #     - header.tex
 ---
 
 
@@ -41,20 +55,20 @@ format:
 <!-- keywords: rstats, mrgsolve, simulation, ode -->
 <!-- date: 2023-01-04 -->
 <!-- format:  -->
-<!--   pdf:  -->
-<!--     fig-cap-location: bottom -->
-<!--     papersize: letter -->
-<!--     number-sections: true -->
-<!--     toc: true -->
-<!--     toc-depth: 2 -->
-<!--     toc-title: Contents -->
-<!--     geometry:  -->
-<!--       - bottom=1.25in -->
-<!--       - left=1.0in -->
-<!--       - right=1.0in -->
-<!--       - top=1.25in -->
-<!--     include-in-header:  -->
-<!--       - header.tex -->
+  <!-- pdf: -->
+  <!--   fig-cap-location: bottom -->
+  <!--   papersize: letter -->
+  <!--   number-sections: true -->
+  <!--   toc: true -->
+  <!--   toc-depth: 2 -->
+  <!--   toc-title: Contents -->
+  <!--   geometry: -->
+  <!--     - bottom=1.25in -->
+  <!--     - left=1.0in -->
+  <!--     - right=1.0in -->
+  <!--     - top=1.25in -->
+  <!--   include-in-header: -->
+  <!--     - header.tex -->
 
 <!-- abstract: | -->
 <!--   \noindent mrgsolve is an R package maintained under the auspices of Metrum Research Group that facilitates simulation from models based on systems of ordinary differential equations (ODE) that are typically employed for understanding pharmacokinetics, pharmacodynamics, and systems biology and pharmacology. mrgsolve consists of computer code written in the R and C++ languages, providing an interface to a C++ translation of the lsoda differential equation solver. This vignette will show you how to get started using mrgsolve.  -->
@@ -503,7 +517,7 @@ revar(mod)
 ```
 
 
-## Update the model object
+## Update the model object {#sec-update}
 
 We frequently want to _change_ or _update_ the settings in the model object. 
 
@@ -932,6 +946,214 @@ ev_rx("100 mg x1 then 50 q12h x 10 at 24")
 This syntax will cover many common dosing scenarios. But more complicated 
 scenarios might require creating events as usual with `ev()` and then combining
 as described above. 
+
+# Data sets
+
+A "data set" is just a data frame with time, dose, and covariate information for
+one or more subjects in a population. You can make data frame any way you want,
+as long as the result meets a couple of requirements. That said, mrgsolve
+contains some convenient functions to make it easier to create these data
+frames. A data set is a more general form of the event objects you read about in
+@sec-event, so it might help to review that section now if you haven't already.
+
+## Requirements
+
+There are some requirements for input data sets. 
+
+- Only numeric data can get passed into a problem; mrgsolve will quietly remove 
+  any non-numeric columns before simulating
+
+- Like event objects, NMTRAN data columns can be in upper or lower case, but not 
+  both (pick `AMT/CMT/TIME` or `amt/cmt/time`, not `AMT/cmt/TIME`)
+  
+- Also like event objects, you can switch between upper and lower case naming
+  with `lctran()` and `uctran()`
+
+- Must contain the columns `ID`, `TIME/time`, `CMT/cmt`, `EVID/evid`
+
+- If you have a column with the same name as a parameter in your model, that
+  column cannot contain missing values (`NA`; see @sec-parameters)
+
+- mrgsolve recognizes a "new" ID in the data set when the value of `ID` changes
+  from record to record; however, we recommend using unique ID numbers for 
+  subjects in a data set
+
+## Connection with event objects
+
+There is a natural connection between event objects and data sets: we made
+event objects to work the way they do so it would be easy to create data sets
+from them. So, if I have an event object specifying only a single dose
+
+```{r}
+e <- evd(amt = 100)
+e
+```
+
+we can render that into a data set and it will be configured to meet all the 
+requirements
+
+```{r}
+data <- as_data_set(e)
+data
+```
+
+Here, I didn't specify some required items (like `TIME`), but mrgsolve filled
+them in with something sensible. 
+
+Notice that, in this example, `e` is an event object
+
+```{r}
+class(e)
+```
+
+but `data` is just a plain old data frame
+
+```{r}
+class(data)
+```
+
+## Multiple subjects in a data set {#sec-data-multiple-subjects}
+
+Data sets commonly contain information for more than one subject. There is no 
+practical limit to the complexity you can code into the data set for any given
+individual: one subject might have a single dose whereas another subject may 
+have many doses; doses can be given by different routes; doses may or may not 
+be at steady state etc. 
+
+For example, it's not a problem to have this mix up of dosing scenarios in a 
+single data set:
+
+```{r}
+#| echo: false
+e1 <- evd(amt = 100) 
+e2 <- ev(amt = 200, rate = 50, ii = 24, addl = 3) 
+e3a <- ev(amt = 50, ii = 12, ss = 1, addl = 3)
+e3b <- ev(amt = 100, ii = 24, addl = 2)
+e3c <- ev(amt = 200, ii = 48, addl = 2)
+e3 <- ev_seq(e3a, e3b, e3c)
+
+data <- as_data_set(
+  e1 %>% ev_rep(1:3), 
+  e2, 
+  e3 %>% ev_rep(1:2)
+)
+data_example <- data
+data
+```
+
+## Creating data sets
+
+mrgsolve provides some convenience functions you can use; we've found them
+helpful when certain input data sets are needed. 
+
+### `ev_rep()`
+
+One common way to make a data set is to replicate an event object. We can take
+a very simple event object
+
+```{r}
+e <- ev(amt = 100)
+```
+
+and replicate it to create several subjects with that dose. To create 3 
+subjects, call
+
+
+```{r}
+ev_rep(e, 1:3)
+```
+
+Notice that `ev_rep()` converts the event object into a data frame / data set. 
+This function can be convenient when the input event object is complicated like
+this
+
+```{r}
+e1 <- evd(amt = 100, ii = 24, addl = 5)
+e2 <- evd(amt = 200, ii = 12, addl = 6)
+e3 <- evd(amt = 50, rate = 25)
+
+e <- ev_seq(e1, e2, e3)
+e
+```
+It's easy to replicate this into a data set of 3 (or 300) subjects
+```{r}
+ev_rep(e, 1:3)
+```
+
+### `as_data_set()`
+
+Alternatively, we can use `ev_rep()` to replicate each event object and then
+combine them all into a single data frame with `as_data_set()` 
+
+```{r}
+as_data_set(ev_rep(e1, 1:2), ev_rep(e, 1:2))
+```
+`as_data_set()` combines these event objects together and ensures there are 
+unique values for each `ID` while maintain the complexity within each 
+subject. 
+
+### `ev_expand()`
+
+The `ev_expand()` function will create a single data frame / data set for 
+many subjects, but each subject has a single dosing record. The `_expand`
+part of the function name indicates that we create all combinations of inputs. 
+For example, we can have 3 individuals at each of 2 doses
+
+```{r}
+ev_expand(ID = 1:3, AMT = c(200, 400))
+```
+
+Notice that `ID` runs from 1 to 6 and each `ID` appears only on one row. You 
+might see another function called `expand.ev()`; it does the same thing, but 
+is named to mimic its base R cousin called `expand.grid()`.
+
+### See the user guide
+
+See the mrgsolve [user guide](https://mrgsolve.org/user-guide/datasets.html) 
+for more functions you can use to create interesting input data sets. But 
+remember that you don't _have_ to use our convenience functions; you might be 
+better off coding your own to get the inputs you need for your simulation.
+
+## What about observation records?
+
+You'll notice our input data sets only include dosing records. When this is the
+case, mrgsolve will fill in the observation records for you according to the
+internal simulation time grid maintained in the model object (@sec-update). You
+can put observation records into the data set and get exactly the sampling
+scheme you want for each subject; this is how we simulate from clinical data
+sets (e.g. those you might use in model development). So this is possible and
+you might do it. But most of the time when you are simulating _de novo_, you
+should let mrgsolve fill in the observation records. More on this in the [user
+guide](https://mrgsolve.org/user-guide/datasets.html).
+
+## Invoking data sets
+
+Once you have a model your data set is created, you can pass it into a 
+simulation pipeline with the `data_set()` function. Simulating from the 
+data set we showed in @sec-data-multiple-subjects
+
+
+```{r}
+#| echo: false
+data <- data_example
+```
+
+```{r}
+mod <- modlib("popex", delta = 0.1, end = 300)
+
+set.seed(2468)
+mod %>% 
+  data_set(data) %>%
+  mrgsim(recsort = 3) %>% 
+  plot(IPRED ~ time|factor(ID))
+```
+
+Alternatively, you can just pass the data set to `mrgsim()`
+
+```{r}
+#| eval: false
+mod %>% mrgsim(data = data)
+```
 
 # Simulation and outputs {#sec-simulation}
 
