@@ -12,12 +12,16 @@ abstract: |
   introduction to using mrgsolve in a single document. While there is more to 
   learn about mrgsolve, this document will give you a good introduction to the 
   essentials and some ideas for thinking about how all the pieces fit together. 
-  Be sure to visit [https://mrgsolve.org](mrgsolve.org) for additional resources 
-  to help you learn and effectively use mrgsolve. This document was build with
-  mrgsolve version **`r packageVersion("mrgsolve")`**.
-
+  to help you learn and effectively use mrgsolve. This document was rendered 
+  with mrgsolve version **`r packageVersion("mrgsolve")`**. Be sure to visit
+  [https://mrgsolve.org](mrgsolve.org) for additional resources.
 author: Kyle T. Baron
 format: 
+  #     - bottom=1.25in
+  #     - left=1.0in
+  #     - right=1.0in
+  #     - top=1.25in
+  #     - header.tex
   html: 
     number-sections: true
     toc: true
@@ -38,12 +42,9 @@ format:
   #   toc-depth: 2
   #   toc-title: Contents
   #   geometry:
-  #     - bottom=1.25in
-  #     - left=1.0in
-  #     - right=1.0in
-  #     - top=1.25in
   #   include-in-header:
-  #     - header.tex
+editor_options: 
+  chunk_output_type: console
 ---
 
 
@@ -290,11 +291,13 @@ out
 plot(out, "CP")
 ```
 
-That was a really simple simulation where we used an event object to initiate
-a dose into a one-compartment model. Notice how the `plot()` method allows us to 
-quickly visualize what happened in the simulation. See the `?modlib` help topic
-for more models you can play around with to get comfortable with mrgsolve. Or 
-keep reading to dig into more of the details. 
+That was a really simple simulation where we used an **event object** to initiate
+a **dose** into a **one-compartment model** loaded in from an 
+**internal library** of pre-coded models. Notice how the `plot()` method allows 
+us to quickly visualize what happened in the simulation. See the `?modlib` help 
+topic for more models you can play around with to get comfortable with mrgsolve. 
+Or keep reading to dig into more of the details on all of the steps presented
+in this quick start example. 
 
 # Model object {#sec-mod}
 
