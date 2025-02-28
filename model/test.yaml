@@ -1,5 +1,5 @@
 source: mrgsolve::mwrite
-mrgsolve: 1.5.2.9000
+mrgsolve: 1.5.2
 format: yaml
 version: 1.0
 model: test_mod
