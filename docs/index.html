@@ -3307,7 +3307,7 @@ vertical-align: -.125em;
 ------------  source: azithro-fixed.mod  ------------
 
   project: /Users/kyleb/git...olve/vignette
-  shared object: azithro-fixed.mod-so-6cb2280c12ed 
+  shared object: azithro-fixed.mod-so-703a461ee23d 
 
   time:          start: 0 end: 240 delta: 0.1
                  add: &lt;none&gt;
@@ -3603,7 +3603,7 @@ ID:     1
 -----------------  source: test.mod  -----------------
 
   project: /Users/kyleb/git...ignette/model
-  shared object: test_mod-so-6cb275736d12 
+  shared object: test_mod-so-703a71e12970 
 
   time:          start: 0 end: 24 delta: 1
                  add: &lt;none&gt;
@@ -4340,7 +4340,7 @@ attr(,&quot;package&quot;)
 </section>
 <section id="invoking-data-sets" class="level2" data-number="5.6">
 <h2 data-number="5.6" class="anchored" data-anchor-id="invoking-data-sets"><span class="header-section-number">5.6</span> Invoking data sets</h2>
-<p>Once you have a model your data set is created, you can pass it into a simulation pipeline with the <code>data_set()</code> function. Simulating from the data set we showed in <a href="#sec-data-multiple-subjects" class="quarto-xref">Section 5.3</a></p>
+<p>Once you have a model your data set is created, you can pass it into a simulation pipeline with the <code>data_set()</code> function. Simulating from the data set we showed in <a href="#sec-data-multiple-subjects" class="quarto-xref">Section 5.3</a> with an example population PK model from the internal library (“popex”):</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb126"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb126-1"><a href="#cb126-1" aria-hidden="true" tabindex="-1"></a>mod <span class="ot">&lt;-</span> <span class="fu">modlib</span>(<span class="st">&quot;popex&quot;</span>, <span class="at">delta =</span> <span class="fl">0.1</span>, <span class="at">end =</span> <span class="dv">300</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stderr">

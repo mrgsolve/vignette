@@ -1134,7 +1134,8 @@ guide](https://mrgsolve.org/user-guide/datasets.html).
 
 Once you have a model your data set is created, you can pass it into a 
 simulation pipeline with the `data_set()` function. Simulating from the 
-data set we showed in @sec-data-multiple-subjects
+data set we showed in @sec-data-multiple-subjects with an example population
+PK model from the internal library ("popex"): 
 
 
 ```{r}
