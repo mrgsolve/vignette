@@ -28,6 +28,7 @@ format:
     toc-depth: 3
     embed-resources: true
     self-contained: true
+    favicon: hex.png
   mrgsolve_vignette-pdf:
     keep_tex: true
     number-sections: true
